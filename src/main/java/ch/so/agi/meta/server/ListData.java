@@ -1,4 +1,4 @@
-package ch.so.agi.meta;
+package ch.so.agi.meta.server;
 
 import java.io.File;
 import java.util.ArrayList;
