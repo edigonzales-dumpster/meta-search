@@ -14,6 +14,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.gargoylesoftware.htmlunit.javascript.host.Console;
+
 import ch.interlis.ili2c.config.Configuration;
 import ch.interlis.ili2c.config.FileEntry;
 import ch.interlis.ili2c.config.FileEntryKind;
@@ -39,13 +41,14 @@ public class MainController {
         // Repositories. Falls nichts gesetzt wird, werden die Standardrepos verwendet (TODO prüfen).
         // Ist das überhaupt notwendig, wenn ich listData machen will?
         //settings.setIlidirs("https://geo.so.ch/models;http://models.interlis.ch");
-
+        
         Configuration config = new Configuration();
         ArrayList ilifilev = new ArrayList();
         //ilifilev.add("http://models.geo.gl.ch");
         ilifilev.add("https://s3.eu-central-1.amazonaws.com/ch.so.geo.repository");
         Iterator ilifilei = ilifilev.iterator();
         while (ilifilei.hasNext()) {
+            logger.info("fubar");
             String ilifile = (String) ilifilei.next();
             FileEntry file = new FileEntry(ilifile, FileEntryKind.ILIMODELFILE);
             config.addFileEntry(file);
@@ -54,15 +57,15 @@ public class MainController {
         List<DataSet> dataSets = new ArrayList<DataSet>();
         List<Dataset> datasets = new ListData().listData(config, settings);
         for (Dataset dataset : datasets) {
-            logger.info(dataset.getMetadata().getid());
-            logger.info(dataset.getMetadata().getfiles()[0].toString());
+//            logger.info(dataset.getMetadata().getid());
+//            logger.info(dataset.getMetadata().getfiles()[0].toString());
             
             String id = dataset.getMetadata().getid();
             String title = dataset.getMetadata().gettitle().getLocalisedText()[0].getText();
             String shortDescription = dataset.getMetadata().getshortDescription().getLocalisedText()[0].getText();
             String keywords = dataset.getMetadata().getkeywords();
             String original = dataset.getMetadata().getoriginal();
-            logger.info(dataset.getMetadata().getoriginal());
+//            logger.info(dataset.getMetadata().getoriginal());
             String model = dataset.getMetadata().getmodel().getname();
             String modelRepository = dataset.getMetadata().getmodel().getlocationHint();
             String furtherInformation = dataset.getMetadata().getfurtherInformation();
