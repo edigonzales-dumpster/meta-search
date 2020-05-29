@@ -34,7 +34,7 @@ public class MainController {
         return new ResponseEntity<String>("meta search", HttpStatus.OK);
     }
     
-    @GetMapping("/data")
+    @GetMapping("/ilidata")
     public ResponseEntity<List<DataSet>> ilidata() {
         UserSettings settings = new UserSettings();
         
@@ -65,7 +65,6 @@ public class MainController {
             String shortDescription = dataset.getMetadata().getshortDescription().getLocalisedText()[0].getText();
             String keywords = dataset.getMetadata().getkeywords();
             String original = dataset.getMetadata().getoriginal();
-//            logger.info(dataset.getMetadata().getoriginal());
             String model = dataset.getMetadata().getmodel().getname();
             String modelRepository = dataset.getMetadata().getmodel().getlocationHint();
             String furtherInformation = dataset.getMetadata().getfurtherInformation();

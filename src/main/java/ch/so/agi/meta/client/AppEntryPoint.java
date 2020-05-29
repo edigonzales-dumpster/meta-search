@@ -13,6 +13,7 @@ import org.dominokit.domino.ui.forms.SuggestBox.DropDownPositionDown;
 import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
 import org.dominokit.domino.ui.datatable.TableConfig;
+import org.dominokit.domino.ui.datatable.plugins.RecordDetailsPlugin;
 import org.dominokit.domino.ui.datatable.store.LocalListDataStore;
 import org.dominokit.domino.ui.dropdown.DropDownMenu;
 import org.dominokit.domino.ui.dropdown.DropDownPosition;
@@ -111,7 +112,7 @@ public class AppEntryPoint implements EntryPoint {
                 headers.append("Content-Type", "application/x-www-form-urlencoded"); 
                 requestInit.setHeaders(headers);
 
-                DomGlobal.fetch("data", requestInit)
+                DomGlobal.fetch("ilidata", requestInit)
                 .then(response -> {
                     if (!response.ok) {
                         return null;
@@ -158,24 +159,24 @@ public class AppEntryPoint implements EntryPoint {
                 //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().id)))
             .addColumn(ColumnConfig.<DataSet>create("title", "Titel")
-                    .textAlign("left")
-                    //.asHeader()
-                    //.setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)));
-                    .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)))
+                .textAlign("left")
+                //.asHeader()
+                .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)))
             .addColumn(ColumnConfig.<DataSet>create("model", "Modell")
                 .textAlign("left")
                 //.asHeader()
-                //.setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)));
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().model)));
+        
+        tableConfig.addPlugin(new RecordDetailsPlugin<>(cell -> new DataSetDetail(cell).element()));
         
         LocalListDataStore<DataSet> localListDataStore = new LocalListDataStore<>();
         DataTable<DataSet> table = new DataTable<>(tableConfig, localListDataStore);
-        
+      
         localListDataStore.setData(dataSets);
         table.element().style.paddingTop = CSSProperties.PaddingTopUnionType.of("100px");
         table.load();
         
-        body().add(table);
+        body().add(div().css("table-responsive").style("padding: 20px;").add(table));
         
         
     }

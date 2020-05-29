@@ -8,3 +8,13 @@ body, div {
     /*font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;*/   
     font-family: 'Fira Sans', Arial, sans-serif;   
 }
+
+.DataSetDetailHeader {
+	font-weight: bold;
+	padding-top: 20px;
+	padding-bottom: 5px;
+}
+
+.DataSetDetailText {
+    line-height: 1.6;
+}
