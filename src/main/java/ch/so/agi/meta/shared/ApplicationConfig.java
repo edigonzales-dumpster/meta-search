@@ -13,15 +13,15 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 @EnableConfigurationProperties
 @ConfigurationProperties(prefix = "app")
 public class ApplicationConfig implements IsSerializable {
-    private List<BackgroundMapConfig> backgroundMaps = new ArrayList<BackgroundMapConfig>();
+    private String myVar;
     
     public ApplicationConfig() {}
-    
-    public List<BackgroundMapConfig> getBackgroundMaps() {
-        return backgroundMaps;
+
+    public String getMyVar() {
+        return myVar;
     }
 
-    public void setBackgroundMaps(List<BackgroundMapConfig> backgroundMaps) {
-        this.backgroundMaps = backgroundMaps;
+    public void setMyVar(String myVar) {
+        this.myVar = myVar;
     }
 }

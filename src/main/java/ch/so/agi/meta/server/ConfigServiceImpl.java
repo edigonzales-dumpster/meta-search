@@ -1,8 +1,6 @@
 package ch.so.agi.meta.server;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.ServletException;
 
@@ -14,7 +12,6 @@ import org.springframework.web.context.support.SpringBeanAutowiringSupport;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 import ch.so.agi.meta.shared.ApplicationConfig;
-import ch.so.agi.meta.shared.BackgroundMapConfig;
 import ch.so.agi.meta.shared.ConfigResponse;
 import ch.so.agi.meta.shared.ConfigService;
 
@@ -33,7 +30,7 @@ public class ConfigServiceImpl extends RemoteServiceServlet implements ConfigSer
     @Override
     public ConfigResponse configServer() throws IllegalArgumentException, IOException {
         ConfigResponse response = new ConfigResponse();
-        response.setBackgroundMaps(config.getBackgroundMaps());
+        response.setMyVar(config.getMyVar());
         return response;
     }
 
