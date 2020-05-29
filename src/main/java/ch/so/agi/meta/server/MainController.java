@@ -22,8 +22,8 @@ import ch.interlis.ili2c.config.FileEntryKind;
 import ch.interlis.ili2c.gui.UserSettings;
 import ch.interlis.ilirepository.Dataset;
 import ch.interlis.models.DatasetIdx16.DataFile;
-import ch.so.agi.meta.shared.DataSet;
-import ch.so.agi.meta.shared.DataSetFile;
+import ch.so.agi.meta.shared.model.DataSet;
+import ch.so.agi.meta.shared.model.DataSetFile;
 
 @RestController
 public class MainController {

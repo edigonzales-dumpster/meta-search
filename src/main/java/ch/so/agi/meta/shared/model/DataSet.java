@@ -1,4 +1,4 @@
-package ch.so.agi.meta.shared;
+package ch.so.agi.meta.shared.model;
 
 import java.util.Date;
 import java.util.List;

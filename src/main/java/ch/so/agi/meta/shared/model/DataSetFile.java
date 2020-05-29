@@ -1,4 +1,4 @@
-package ch.so.agi.meta.shared;
+package ch.so.agi.meta.shared.model;
 
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;

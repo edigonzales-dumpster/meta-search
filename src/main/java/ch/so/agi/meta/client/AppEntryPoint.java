@@ -37,7 +37,7 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import ch.so.agi.meta.shared.ConfigResponse;
 import ch.so.agi.meta.shared.ConfigService;
 import ch.so.agi.meta.shared.ConfigServiceAsync;
-import ch.so.agi.meta.shared.DataSet;
+import ch.so.agi.meta.shared.model.DataSet;
 //import ch.so.agi.meta.client.ui.BackgroundSwitcher;
 //import ch.so.agi.meta.client.ui.SearchBox;
 //import ch.so.agi.meta.shared.BackgroundMapConfig;
