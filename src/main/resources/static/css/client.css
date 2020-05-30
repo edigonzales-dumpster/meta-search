@@ -9,6 +9,11 @@ body, div {
     font-family: 'Fira Sans', Arial, sans-serif;   
 }
 
+.DataSetDetail {    
+	line-height: 1.6;
+	
+}
+
 .DataSetDetailHeader {
 	font-weight: bold;
 	padding-top: 20px;
@@ -16,5 +21,20 @@ body, div {
 }
 
 .DataSetDetailText {
-    line-height: 1.6;
 }
+
+
+.DataSetDetailLink {
+    color: #ef5350;  
+}
+
+a.DataSetDetailLink:hover {
+    color: #ef5350;
+    text-decoration: underline !important;
+}  
+
+a.DataSetDetailLink:visited {
+    color: #ef5350; 
+    text-decoration: underline !important;
+}  
+

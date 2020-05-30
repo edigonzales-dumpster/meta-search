@@ -24,6 +24,7 @@ import ch.interlis.ilirepository.Dataset;
 import ch.interlis.models.DatasetIdx16.DataFile;
 import ch.so.agi.meta.shared.model.DataSet;
 import ch.so.agi.meta.shared.model.DataSetFile;
+import elemental2.core.JsDate;
 
 @RestController
 public class MainController {
@@ -35,7 +36,7 @@ public class MainController {
     }
     
     @GetMapping("/ilidata")
-    public ResponseEntity<List<DataSet>> ilidata() {
+    public ResponseEntity<List<DataSet>> ilidata() throws ParseException {
         UserSettings settings = new UserSettings();
         
         // Repositories. Falls nichts gesetzt wird, werden die Standardrepos verwendet (TODO prüfen).
@@ -106,12 +107,13 @@ public class MainController {
             dataSet.furtherInformation = furtherInformation;
             dataSet.furtherMetadata = furtherMetadata;
             dataSet.knownWMS = knownWMS;
-            dataSet.lastEditingDate = lastEditingDate;
+            SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+            dataSet.lastEditingDate = format.format(lastEditingDate);
             dataSet.westLimit = westLimit;
             dataSet.southLimit = southLimit;
             dataSet.eastLimit = eastLimit;
             dataSet.northLimit = northLimit;
-            dataSet.files = dataSetFiles;
+            dataSet.files = dataSetFiles.toArray(new DataSetFile[0]);
             
             dataSets.add(dataSet);
         }

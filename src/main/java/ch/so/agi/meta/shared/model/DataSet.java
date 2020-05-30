@@ -3,6 +3,9 @@ package ch.so.agi.meta.shared.model;
 import java.util.Date;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import elemental2.core.JsDate;
 import jsinterop.annotations.JsType;
 import jsinterop.annotations.JsPackage;
 import jsinterop.annotations.JsProperty;
@@ -29,7 +32,8 @@ public class DataSet {
     
     public String knownWMS;
     
-    public Date lastEditingDate;
+    // Geht das nicht besser?
+    public String lastEditingDate;
     
     public double westLimit;
     
@@ -39,7 +43,7 @@ public class DataSet {
     
     public double northLimit;
     
-    public List<DataSetFile> files;
+    public DataSetFile[] files;
 
     public DataSet() {}    
 }

@@ -14,6 +14,7 @@ import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
 import org.dominokit.domino.ui.datatable.TableConfig;
 import org.dominokit.domino.ui.datatable.plugins.RecordDetailsPlugin;
+import org.dominokit.domino.ui.datatable.plugins.SortPlugin;
 import org.dominokit.domino.ui.datatable.store.LocalListDataStore;
 import org.dominokit.domino.ui.dropdown.DropDownMenu;
 import org.dominokit.domino.ui.dropdown.DropDownPosition;
@@ -83,17 +84,18 @@ public class AppEntryPoint implements EntryPoint {
 //    private MyMessages messages = GWT.create(MyMessages.class);
     private final ConfigServiceAsync configService = GWT.create(ConfigService.class);
     
+    // Configuration
+    String myVar;
+
     private String SEARCH_SERVICE_URL = "https://geo.so.ch/api/search/v2/?filter=foreground,ch.so.agi.gemeindegrenzen,ch.so.agi.av.gebaeudeadressen.gebaeudeeingaenge,ch.so.agi.av.bodenbedeckung,ch.so.agi.av.grundstuecke.projektierte,ch.so.agi.av.grundstuecke.rechtskraeftig,ch.so.agi.av.nomenklatur.flurnamen,ch.so.agi.av.nomenklatur.gelaendenamen&searchtext=";    
 
     private NumberFormat fmtDefault = NumberFormat.getDecimalFormat();
     private NumberFormat fmtPercent = NumberFormat.getFormat("#0.0");
     
-    // Settings
-    String myVar;
-    
     SuggestBox suggestBox;
     
-    List<DataSet> dataSets = new ArrayList<DataSet>();
+    DataSet[] dataSets;
+    
     public void onModuleLoad() {
         configService.configServer(new AsyncCallback<ConfigResponse>() {
             @Override
@@ -105,7 +107,6 @@ public class AppEntryPoint implements EntryPoint {
             @Override
             public void onSuccess(ConfigResponse result) {
                 myVar = result.getMyVar();  
-                console.log(myVar);
                 
                 RequestInit requestInit = RequestInit.create();
                 Headers headers = new Headers();
@@ -119,21 +120,9 @@ public class AppEntryPoint implements EntryPoint {
                     }
                     return response.text();
                 })
-                .then(json -> {
-                    JsArray<?> parsed = Js.cast(Global.JSON.parse(json));
-                    console.log(parsed.length);
-                    
-                    dataSets.clear();
-                    for (int i = 0; i < parsed.length; i++) { 
-                        DataSet dataset = (DataSet) parsed.getAt(i);
-                        console.log(dataset.id);
-                        console.log(dataset.files);
-                        
-                        dataSets.add(dataset);
-                    }
-                    
+                .then(json -> {                    
+                    dataSets = (DataSet[]) Global.JSON.parse(json);
                     init();
-                    
                     return null;
                 }).catch_(error -> {
                     console.log(error);
@@ -145,34 +134,36 @@ public class AppEntryPoint implements EntryPoint {
 
     @SuppressWarnings("unchecked")
     private void init() {      
-        console.log("init");
         
-//        Theme theme = new Theme(ColorScheme.RED);
-//        theme.apply();
-
-//        body().add(div().id("fubar").textContent("Hallo Welt."));
+        Theme theme = new Theme(ColorScheme.RED);
+        theme.apply();
         
         TableConfig<DataSet> tableConfig = new TableConfig<>();
         tableConfig
             .addColumn(ColumnConfig.<DataSet>create("id", "Id")
                 .textAlign("left")
+                .sortable()
                 //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().id)))
             .addColumn(ColumnConfig.<DataSet>create("title", "Titel")
                 .textAlign("left")
                 //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)))
-            .addColumn(ColumnConfig.<DataSet>create("model", "Modell")
+            .addColumn(ColumnConfig.<DataSet>create("model", "Datenmodell")
                 .textAlign("left")
+                .sortable()
                 //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().model)));
         
         tableConfig.addPlugin(new RecordDetailsPlugin<>(cell -> new DataSetDetail(cell).element()));
+        tableConfig.addPlugin(new SortPlugin<>());
         
-        LocalListDataStore<DataSet> localListDataStore = new LocalListDataStore<>();
-        DataTable<DataSet> table = new DataTable<>(tableConfig, localListDataStore);
-      
-        localListDataStore.setData(dataSets);
+        LocalListDataStore<DataSet> listStore = new LocalListDataStore<>();
+        listStore.setData(Arrays.asList(dataSets));
+        listStore.setRecordsSorter(new DataSetSorter());
+
+        DataTable<DataSet> table = new DataTable<>(tableConfig, listStore);
+              
         table.element().style.paddingTop = CSSProperties.PaddingTopUnionType.of("100px");
         table.load();
         
