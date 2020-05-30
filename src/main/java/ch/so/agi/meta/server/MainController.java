@@ -12,6 +12,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gargoylesoftware.htmlunit.javascript.host.Console;
@@ -20,8 +21,15 @@ import ch.interlis.ili2c.config.Configuration;
 import ch.interlis.ili2c.config.FileEntry;
 import ch.interlis.ili2c.config.FileEntryKind;
 import ch.interlis.ili2c.gui.UserSettings;
+import ch.interlis.ili2c.modelscan.IliFile;
+import ch.interlis.ili2c.modelscan.IliModel;
 import ch.interlis.ilirepository.Dataset;
+import ch.interlis.ilirepository.IliFiles;
+import ch.interlis.ilirepository.impl.RepositoryAccess;
+import ch.interlis.ilirepository.impl.RepositoryAccessException;
+import ch.interlis.ilirepository.impl.RepositoryCrawler;
 import ch.interlis.models.DatasetIdx16.DataFile;
+import ch.interlis.models.IliRepository20.RepositoryIndex.ModelMetadata;
 import ch.so.agi.meta.shared.model.DataSet;
 import ch.so.agi.meta.shared.model.DataSetFile;
 import elemental2.core.JsDate;
@@ -34,6 +42,47 @@ public class MainController {
     public ResponseEntity<String> ping() {
         return new ResponseEntity<String>("meta search", HttpStatus.OK);
     }
+    
+    @GetMapping("/model/{model}")
+    public void model(@PathVariable String model) throws RepositoryAccessException {
+        logger.info(model);
+        
+        // TODO: steht bereits im ilidata.xml (wie transportieren?)
+        RepositoryCrawler crawler = new RepositoryCrawler(new RepositoryAccess());
+        String[] repo = new String[] {UserSettings.ILI_REPOSITORY};
+        crawler.setRepositories(repo);
+        IliFile iliFile = crawler.getIliFileMetadataDeep(model, 2.3, true);
+        logger.info(iliFile.getPath());
+        logger.info(iliFile.getRepositoryUri());
+
+        String repositoryUri = "https://s3.eu-central-1.amazonaws.com/ch.so.geo.repository/";
+        
+        RepositoryAccess repoAccess = new RepositoryAccess();
+        List<ch.ehi.iox.ilisite.IliRepository09.RepositoryIndex.ModelMetadata> modelMetadataList = repoAccess.readIlimodelsXml(repositoryUri);   
+        
+        for (ch.ehi.iox.ilisite.IliRepository09.RepositoryIndex.ModelMetadata modelMetadata : modelMetadataList) {
+            if (modelMetadata.getName().equals(model)) {
+                logger.info("found");
+                
+                logger.info(modelMetadata.getIssuer());
+                logger.info(modelMetadata.getmd5());
+                if (modelMetadata.getderivedModel().length > 0) {
+                    logger.info(modelMetadata.getderivedModel()[0].getvalue());
+                }
+                break;
+            }
+        }
+        
+        
+//        Iterator it = iliFile.iteratorModel();
+//        while(it.hasNext()) {
+//            IliModel iliModel = (IliModel) it.next();
+//            logger.info(iliModel.getName());
+//
+////            logger.info(it.next().getClass().toString());
+//        }
+    }
+    
     
     @GetMapping("/ilidata")
     public ResponseEntity<List<DataSet>> ilidata() throws ParseException {
@@ -57,10 +106,7 @@ public class MainController {
 
         List<DataSet> dataSets = new ArrayList<DataSet>();
         List<Dataset> datasets = new ListData().listData(config, settings);
-        for (Dataset dataset : datasets) {
-//            logger.info(dataset.getMetadata().getid());
-//            logger.info(dataset.getMetadata().getfiles()[0].toString());
-            
+        for (Dataset dataset : datasets) {            
             String id = dataset.getMetadata().getid();
             String title = dataset.getMetadata().gettitle().getLocalisedText()[0].getText();
             String shortDescription = dataset.getMetadata().getshortDescription().getLocalisedText()[0].getText();
