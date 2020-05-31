@@ -25,16 +25,19 @@ body, div {
 
 
 .DataSetDetailLink {
-    color: #ef5350;  
+    color: #2196F3; 
+    /*color: #ef5350;*/     
 }
 
 a.DataSetDetailLink:hover {
-    color: #ef5350;
+    color: #2196F3; 
+    /*color: #ef5350;*/     
     text-decoration: underline !important;
 }  
 
 a.DataSetDetailLink:visited {
-    color: #ef5350; 
+    color: #2196F3; 
+    /*color: #ef5350;*/     
     text-decoration: underline !important;
 }  
 

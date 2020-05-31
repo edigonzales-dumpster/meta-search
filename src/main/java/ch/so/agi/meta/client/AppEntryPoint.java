@@ -1,6 +1,8 @@
 package ch.so.agi.meta.client;
 
 import static elemental2.dom.DomGlobal.console;
+import static elemental2.dom.DomGlobal.alert;
+
 import static org.jboss.elemento.Elements.*;
 
 import java.util.ArrayList;
@@ -10,6 +12,7 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.dominokit.domino.ui.forms.SuggestBox.DropDownPositionDown;
+import org.dominokit.domino.ui.button.Button;
 import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
 import org.dominokit.domino.ui.datatable.TableConfig;
@@ -23,6 +26,8 @@ import org.dominokit.domino.ui.forms.SuggestBoxStore;
 import org.dominokit.domino.ui.forms.SuggestItem;
 import org.dominokit.domino.ui.icons.Icon;
 import org.dominokit.domino.ui.icons.Icons;
+import org.dominokit.domino.ui.modals.IsModalDialog;
+import org.dominokit.domino.ui.modals.ModalDialog;
 import org.dominokit.domino.ui.style.Color;
 import org.dominokit.domino.ui.style.ColorScheme;
 import org.dominokit.domino.ui.themes.Theme;
@@ -40,6 +45,7 @@ import ch.so.agi.meta.shared.ConfigResponse;
 import ch.so.agi.meta.shared.ConfigService;
 import ch.so.agi.meta.shared.ConfigServiceAsync;
 import ch.so.agi.meta.shared.model.DataSet;
+import ch.so.agi.meta.shared.model.ModelMeta;
 //import ch.so.agi.meta.client.ui.BackgroundSwitcher;
 //import ch.so.agi.meta.client.ui.SearchBox;
 //import ch.so.agi.meta.shared.BackgroundMapConfig;
@@ -95,6 +101,7 @@ public class AppEntryPoint implements EntryPoint {
     SuggestBox suggestBox;
     
     DataSet[] dataSets;
+    ModelMeta modelMeta;
     
     public void onModuleLoad() {
         configService.configServer(new AsyncCallback<ConfigResponse>() {
@@ -135,7 +142,7 @@ public class AppEntryPoint implements EntryPoint {
     @SuppressWarnings("unchecked")
     private void init() {      
         
-        Theme theme = new Theme(ColorScheme.RED);
+        Theme theme = new Theme(ColorScheme.BLUE);
         theme.apply();
         
         TableConfig<DataSet> tableConfig = new TableConfig<>();
@@ -143,18 +150,15 @@ public class AppEntryPoint implements EntryPoint {
             .addColumn(ColumnConfig.<DataSet>create("id", "Id")
                 .textAlign("left")
                 .sortable()
-                //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().id)))
             .addColumn(ColumnConfig.<DataSet>create("title", "Titel")
                 .textAlign("left")
-                //.asHeader()
                 .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().title)))
             .addColumn(ColumnConfig.<DataSet>create("model", "Datenmodell")
                 .textAlign("left")
                 .sortable()
-                //.asHeader()
-                .setCellRenderer(cell -> TextNode.of(cell.getTableRow().getRecord().model)));
-        
+                .setCellRenderer(cell -> a().on(click, event -> showModel(cell.getRecord().model)).id("modelLink").attr("class", "DataSetDetailLink").add(span().textContent(cell.getRecord().model)).element()));
+
         tableConfig.addPlugin(new RecordDetailsPlugin<>(cell -> new DataSetDetail(cell).element()));
         tableConfig.addPlugin(new SortPlugin<>());
         
@@ -168,11 +172,50 @@ public class AppEntryPoint implements EntryPoint {
         table.load();
         
         body().add(div().css("table-responsive").style("padding: 20px;").add(table));
-        
-        
     }
 
-   private static native void updateURLWithoutReloading(String newUrl) /*-{
+    private void showModel(String modelName) {
+        console.log(modelName);
+        
+        RequestInit requestInit = RequestInit.create();
+        Headers headers = new Headers();
+        headers.append("Content-Type", "application/x-www-form-urlencoded"); 
+        requestInit.setHeaders(headers);
+
+        DomGlobal.fetch("model/" + modelName , requestInit)
+        .then(response -> {
+            if (!response.ok) {
+                return null;
+            }
+            return response.text();
+        })
+        .then(json -> {                    
+            modelMeta = (ModelMeta) Global.JSON.parse(json);
+            
+            console.log(modelMeta);
+            
+            ModalDialog modal = ModalDialog.create("Modal title")
+                    .setAutoClose(true)
+                    .setType(IsModalDialog.ModalType.RIGHT_SHEET)
+                    .setSize(IsModalDialog.ModalSize.LARGE);
+            modal.appendChild(TextNode.of("fubar"));
+            Button closeButton = Button.create("CLOSE").linkify();
+            EventListener closeModalListener = (evt) -> modal.close();
+            closeButton.addClickListener(closeModalListener);
+            modal.appendFooterChild(closeButton);
+            modal.open();
+            
+            
+            return null;
+        }).catch_(error -> {
+            console.log(error);
+            return null;
+        });                
+
+        
+    }
+    
+    private static native void updateURLWithoutReloading(String newUrl) /*-{
         $wnd.history.pushState(newUrl, "", newUrl);
     }-*/;
 }

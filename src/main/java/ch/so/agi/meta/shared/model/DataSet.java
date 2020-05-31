@@ -1,14 +1,7 @@
 package ch.so.agi.meta.shared.model;
 
-import java.util.Date;
-import java.util.List;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-
-import elemental2.core.JsDate;
 import jsinterop.annotations.JsType;
 import jsinterop.annotations.JsPackage;
-import jsinterop.annotations.JsProperty;
 
 @JsType(isNative=true, namespace=JsPackage.GLOBAL, name="Object")
 public class DataSet {
