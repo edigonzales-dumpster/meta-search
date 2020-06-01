@@ -12,6 +12,8 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 import org.dominokit.domino.ui.forms.SuggestBox.DropDownPositionDown;
+import org.dominokit.domino.ui.grid.Column;
+import org.dominokit.domino.ui.grid.Row;
 import org.dominokit.domino.ui.button.Button;
 import org.dominokit.domino.ui.datatable.ColumnConfig;
 import org.dominokit.domino.ui.datatable.DataTable;
@@ -34,6 +36,7 @@ import org.dominokit.domino.ui.themes.Theme;
 import org.dominokit.domino.ui.utils.HasChangeHandlers.ChangeHandler;
 import org.dominokit.domino.ui.utils.HasSelectionHandler.SelectionHandler;
 import org.dominokit.domino.ui.utils.TextNode;
+import org.gwtproject.safehtml.shared.SafeHtmlUtils;
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
@@ -45,6 +48,8 @@ import ch.so.agi.meta.shared.ConfigResponse;
 import ch.so.agi.meta.shared.ConfigService;
 import ch.so.agi.meta.shared.ConfigServiceAsync;
 import ch.so.agi.meta.shared.model.DataSet;
+import ch.so.agi.meta.shared.model.ModelAttribute;
+import ch.so.agi.meta.shared.model.ModelClass;
 import ch.so.agi.meta.shared.model.ModelMeta;
 //import ch.so.agi.meta.client.ui.BackgroundSwitcher;
 //import ch.so.agi.meta.client.ui.SearchBox;
@@ -191,20 +196,101 @@ public class AppEntryPoint implements EntryPoint {
         })
         .then(json -> {                    
             modelMeta = (ModelMeta) Global.JSON.parse(json);
+                        
+            HTMLDivElement content = div().element();
             
-            console.log(modelMeta);
+            Row generalInfoRow = Row.create();
+            generalInfoRow.style().setColor("#333").setPaddingBottom("10px").get();
+            generalInfoRow
+                .addColumn(
+                        Column.span2().appendChild(span().textContent("Name:")))
+                .addColumn(
+                        Column.span10().appendChild(span().textContent(modelMeta.name)))
+                .addColumn(
+                        Column.span2().appendChild(span().textContent("Version:")))
+                .addColumn(
+                        Column.span10().appendChild(span().textContent(modelMeta.version)));
+            content.appendChild(generalInfoRow.element());
             
-            ModalDialog modal = ModalDialog.create("Modal title")
+            Row classHeaderRow = Row.create();
+            classHeaderRow.style().setColor("#333").setPaddingBottom("10px").setPaddingTop("20px").get();
+            classHeaderRow
+                .addColumn(
+                        Column.span12().appendChild(span().style("font-weight:bold;").textContent("Tabellen")));
+            content.appendChild(classHeaderRow.element());
+
+            
+            for (ModelClass modelClass : modelMeta.modelClasses) {                
+                Row classInfoRow = Row.create();
+                classInfoRow.style().setColor("#333").setPaddingTop("10px;").get();
+                classInfoRow
+                    .addColumn(
+                            Column.span2().appendChild(span().textContent("Name:")))
+                    .addColumn(
+                            Column.span10().appendChild(span().style("font-weight:600;").textContent(modelClass.className)))
+                    .addColumn(
+                            Column.span2().appendChild(span().textContent("Beschreibung:")))
+                    .addColumn(
+                            Column.span10().appendChild(span().textContent(modelClass.classDescripion)))
+                    .addColumn(
+                            Column.span2().appendChild(span().textContent("Attribute:")))
+                    .addColumn(
+                            Column.span10().appendChild(a().on(click, event -> toggleAttributes(event, modelClass.className+".Attributes")).attr("class", "DataSetDetailLink").add(span().id(modelClass.className+".Attributes.LinkText").textContent("anzeigen"))));
+                    
+                content.appendChild(classInfoRow.element());
+                
+                HTMLDivElement attributesElement = div().id(modelClass.className+".Attributes").element();
+                attributesElement.style.display = "none";
+                
+                Row attributesHeaderRow = Row.create();
+                attributesHeaderRow.style().setColor("#333").get();
+                attributesHeaderRow
+                    .addColumn(
+                            Column.span3().appendChild(span().style("font-size:12px;font-style:italic;font-weight:600;").textContent("Name")))
+                    .addColumn(
+                            Column.span5().appendChild(span().style("font-size:12px;font-style:italic;font-weight:600;").textContent("Beschreibung")))
+                    .addColumn(
+                            Column.span2().appendChild(span().style("font-size:12px;font-style:italic;font-weight:600;").textContent("Typ")))
+                    .addColumn(
+                            Column.span2().appendChild(span().style("font-size:12px;font-style:italic;font-weight:600;").textContent("Zwingend")));
+                attributesElement.appendChild(attributesHeaderRow.element());
+                
+                for (ModelAttribute modelAttribute : modelClass.modelAttributes) {
+                    String isMandatory = modelAttribute.mandatory ? "j" : "n";
+                    Row attributesInfoRow = Row.create();
+                    attributesInfoRow.style().setColor("#333").get();
+                    attributesInfoRow
+                    .addColumn(
+                            Column.span3().appendChild(span().textContent(modelAttribute.attributeName)))
+                    .addColumn(
+                            Column.span5().appendChild(span().textContent(modelAttribute.attributeDescription)))
+                    .addColumn(
+                            Column.span2().appendChild(span().textContent(modelAttribute.attributeType)))
+                    .addColumn(
+                            Column.span2().appendChild(span().textContent(isMandatory)));
+                    attributesElement.appendChild(attributesInfoRow.element());
+                }
+                content.appendChild(attributesElement);
+
+                content.appendChild(span().innerHtml(SafeHtmlUtils.fromTrustedString("<hr>")).element());
+
+            }
+
+            ModalDialog modal = ModalDialog.create("Datenmodell")
                     .setAutoClose(true)
-                    .setType(IsModalDialog.ModalType.RIGHT_SHEET)
+                    //.setType(IsModalDialog.ModalType.RIGHT_SHEET)
                     .setSize(IsModalDialog.ModalSize.LARGE);
-            modal.appendChild(TextNode.of("fubar"));
+            modal.style().cssText("max-height:90%;");
+            modal.appendChild(content);
             Button closeButton = Button.create("CLOSE").linkify();
             EventListener closeModalListener = (evt) -> modal.close();
             closeButton.addClickListener(closeModalListener);
             modal.appendFooterChild(closeButton);
             modal.open();
             
+            // Damit nicht ans Ende gescrollt wieder, wenn sich das Fenster
+            // öffnet und der Inhalt grösser als das Fenster ist.
+            modal.element().scrollTop = 0;
             
             return null;
         }).catch_(error -> {
@@ -213,6 +299,21 @@ public class AppEntryPoint implements EntryPoint {
         });                
 
         
+    }
+    
+    private void toggleAttributes(Event event, String id) {
+        console.log(event.currentTarget);
+        console.log(event.target);
+        console.log(id);
+        HTMLElement element = (HTMLElement) DomGlobal.document.getElementById(id);
+        HTMLElement textElement = (HTMLElement) event.target;        
+        if (element.style.display == "none" ) {
+            element.style.display = "block";
+            textElement.innerHTML = "verbergen";
+        } else {
+            element.style.display = "none";
+            textElement.innerHTML = "anzeigen";            
+        }
     }
     
     private static native void updateURLWithoutReloading(String newUrl) /*-{
