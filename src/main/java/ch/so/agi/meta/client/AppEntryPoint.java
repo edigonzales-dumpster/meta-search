@@ -180,8 +180,6 @@ public class AppEntryPoint implements EntryPoint {
     }
 
     private void showModel(String modelName) {
-        console.log(modelName);
-        
         RequestInit requestInit = RequestInit.create();
         Headers headers = new Headers();
         headers.append("Content-Type", "application/x-www-form-urlencoded"); 
@@ -302,9 +300,6 @@ public class AppEntryPoint implements EntryPoint {
     }
     
     private void toggleAttributes(Event event, String id) {
-        console.log(event.currentTarget);
-        console.log(event.target);
-        console.log(id);
         HTMLElement element = (HTMLElement) DomGlobal.document.getElementById(id);
         HTMLElement textElement = (HTMLElement) event.target;        
         if (element.style.display == "none" ) {

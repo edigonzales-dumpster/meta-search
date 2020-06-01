@@ -243,15 +243,11 @@ public class MainController {
                                 } else if (type instanceof CompositionType) {
                                     CompositionType compositionType = (CompositionType) type;
                                     Table struct = compositionType.getComponentType();
-                                    
                                     if (struct.getName().equalsIgnoreCase("MultiSurface")) {
                                         logger.info("Attributtyp2: " + "MultiSurface");
-                                        
                                         modelAttribute.attributeType = "MultiPolygon (Surface)";
                                     }
-
                                 }
-                                
                                 modelAttributes.add(modelAttribute);
                                 logger.info("-------------------------------------");
                             }   
@@ -317,7 +313,6 @@ public class MainController {
         return false;
     }
 
-    
     @GetMapping("/ilidata")
     public ResponseEntity<List<DataSet>> ilidata() throws ParseException {
         UserSettings settings = new UserSettings();
@@ -332,7 +327,6 @@ public class MainController {
         ilifilev.add("https://s3.eu-central-1.amazonaws.com/ch.so.geo.repository");
         Iterator ilifilei = ilifilev.iterator();
         while (ilifilei.hasNext()) {
-            logger.info("fubar");
             String ilifile = (String) ilifilei.next();
             FileEntry file = new FileEntry(ilifile, FileEntryKind.ILIMODELFILE);
             config.addFileEntry(file);

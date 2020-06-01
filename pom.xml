@@ -183,9 +183,9 @@
                 <argument>build</argument>
                 <argument>.</argument>
                 <argument>-t</argument>
-                <argument>sogis/meta-search:1.0.${env.BUILD_NUMBER}</argument>
+                <argument>sogis/meta-client:1.0.${env.BUILD_NUMBER}</argument>
                 <argument>-t</argument>
-                <argument>sogis/meta-search:latest</argument>
+                <argument>sogis/meta-client:latest</argument>
                 <argument>--build-arg</argument>
                 <argument>JAR_FILE=target/meta-search-${project.version}.jar</argument>
               </arguments>
