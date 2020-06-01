@@ -239,7 +239,7 @@ public class AppEntryPoint implements EntryPoint {
                     
                 content.appendChild(classInfoRow.element());
                 
-                HTMLDivElement attributesElement = div().id(modelClass.className+".Attributes").element();
+                HTMLDivElement attributesElement = div().id(modelClass.className+".Attributes").style("padding:10px;").element();
                 attributesElement.style.display = "none";
                 
                 Row attributesHeaderRow = Row.create();
@@ -258,7 +258,7 @@ public class AppEntryPoint implements EntryPoint {
                 for (ModelAttribute modelAttribute : modelClass.modelAttributes) {
                     String isMandatory = modelAttribute.mandatory ? "j" : "n";
                     Row attributesInfoRow = Row.create();
-                    attributesInfoRow.style().setColor("#333").get();
+                    attributesInfoRow.style().setColor("#333").setPaddingTop("4px").get();
                     attributesInfoRow
                     .addColumn(
                             Column.span3().appendChild(span().textContent(modelAttribute.attributeName)))
