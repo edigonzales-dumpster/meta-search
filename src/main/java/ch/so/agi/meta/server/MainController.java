@@ -1,12 +1,16 @@
 package ch.so.agi.meta.server;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -17,7 +21,9 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -25,6 +31,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.gargoylesoftware.htmlunit.javascript.host.Console;
+import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import ch.ehi.basics.settings.Settings;
 import ch.interlis.ili2c.Ili2c;
@@ -77,6 +84,39 @@ public class MainController {
         return new ResponseEntity<String>("meta search", HttpStatus.OK);
     }
     
+    @GetMapping("/model/pdf/{model}")
+    public ResponseEntity<?> getModelAsPdf(@PathVariable String model) throws FileNotFoundException, IOException {
+        File tmpFolder = Files.createTempDirectory("metaclientws-").toFile();
+        if (!tmpFolder.exists()) {
+            tmpFolder.mkdirs();
+        }
+        logger.info("tmpFolder {}", tmpFolder.getAbsolutePath());
+
+        File htmlFile = new File(Paths.get(tmpFolder.getAbsolutePath(), "helloworld.html").toFile().getAbsolutePath());
+        InputStream htmlFileInputStream = MainController.class.getResourceAsStream("/helloworld.html"); 
+        Files.copy(htmlFileInputStream, htmlFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        htmlFileInputStream.close();
+        
+        File pdfFile = new File(Paths.get(tmpFolder.getAbsolutePath(), "helloworld.pdf").toFile().getAbsolutePath());
+        
+        logger.info(htmlFile.toURI().toString());
+        
+        // TODO exception?
+        try (OutputStream os = new FileOutputStream(pdfFile.getAbsolutePath())) {
+            PdfRendererBuilder builder = new PdfRendererBuilder();
+            builder.useFastMode();
+            builder.withUri(htmlFile.toURI().toString());
+            builder.toStream(os);
+            builder.run();
+            
+            InputStream is = new java.io.FileInputStream(pdfFile);
+            return ResponseEntity
+                    .ok().header("content-disposition", "attachment; filename=" + pdfFile.getName())
+                    .contentLength(pdfFile.length())
+                    .contentType(MediaType.APPLICATION_PDF).body(new InputStreamResource(is));                
+        }
+    }
+    
     @GetMapping("/model/{model}")
     public ResponseEntity<ModelMeta> model(@PathVariable String model) throws RepositoryAccessException, Ili2cException, IOException {
         logger.info(model);
@@ -95,7 +135,6 @@ public class MainController {
         String iliName = null;
         String iliVersion = null;
         String iliDerivedModel = null;
-        
         
         RepositoryAccess repoAccess = new RepositoryAccess();
         List<ch.ehi.iox.ilisite.IliRepository09.RepositoryIndex.ModelMetadata> modelMetadataList = repoAccess.readIlimodelsXml(repositoryUri);   
