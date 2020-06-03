@@ -1,0 +1,51 @@
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+
+<style>
+@page {
+    margin-top: 3.3cm;
+    margin-left: 2cm;
+    margin-right: 2cm;
+    margin-bottom: 3.3cm;
+    size: A4 portrait;
+}
+
+.handwriting {
+  font-family: 'handwriting', serif;
+}
+.arabic {
+  font-family: 'arabic', serif;
+}
+.deja {
+  font-family: 'deja-sans', sans-serif;
+}
+.cjk {
+  font-family: 'cjk';
+}
+
+body {
+  /*font-family: 'handwriting', 'deja-sans', 'cjk', 'arabic', sans-serif, serif;*/
+      font-size: 12px;
+  
+}
+</style>
+</head>
+<body>
+
+<div style="text-align:left; color:orange;">
+<h1>Hi! My name is [[${name}]]!</h1>
+</div>
+
+<!--
+<table border="1" >
+
+    <tr th:each="smokeTest : ${smokeTests}">
+        <td>
+            th:text="${smokeTest.name}">A Smoke Test'
+        </td>
+    </tr>
+</table>
+-->
+
+</body>
+</html>

@@ -1,11 +1,14 @@
 package ch.so.agi.meta.server;
 
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -21,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -29,8 +33,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
+import org.thymeleaf.TemplateEngine;
+import org.thymeleaf.context.Context;
+import org.thymeleaf.spring5.SpringTemplateEngine;
+import org.thymeleaf.templateresolver.ClassLoaderTemplateResolver;
+import org.w3c.tidy.Tidy;
 
-import com.gargoylesoftware.htmlunit.javascript.host.Console;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 
 import ch.ehi.basics.settings.Settings;
@@ -78,7 +86,11 @@ public class MainController {
 
     private static final String METAATTR_MAPPING = "ili2db.mapping";
     private static final String METAATTR_MAPPING_MULTISURFACE = "MultiSurface";
+    private static final String UTF_8 = "UTF-8";
 
+    @Autowired
+    private SpringTemplateEngine springTemplateEngine;
+    
     @GetMapping("/ping")
     public ResponseEntity<String> ping() {
         return new ResponseEntity<String>("meta search", HttpStatus.OK);
@@ -92,20 +104,41 @@ public class MainController {
         }
         logger.info("tmpFolder {}", tmpFolder.getAbsolutePath());
 
-        File htmlFile = new File(Paths.get(tmpFolder.getAbsolutePath(), "helloworld.html").toFile().getAbsolutePath());
-        InputStream htmlFileInputStream = MainController.class.getResourceAsStream("/helloworld.html"); 
-        Files.copy(htmlFileInputStream, htmlFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        htmlFileInputStream.close();
-        
+//        File htmlFile = new File(Paths.get(tmpFolder.getAbsolutePath(), "helloworld.html").toFile().getAbsolutePath());
+//        InputStream htmlFileInputStream = MainController.class.getResourceAsStream("/helloworld.html"); 
+//        Files.copy(htmlFileInputStream, htmlFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+//        htmlFileInputStream.close();
+//        
         File pdfFile = new File(Paths.get(tmpFolder.getAbsolutePath(), "helloworld.pdf").toFile().getAbsolutePath());
+//        
+//        logger.info(htmlFile.toURI().toString());
         
-        logger.info(htmlFile.toURI().toString());
+        
+//        ClassLoaderTemplateResolver templateResolver = new ClassLoaderTemplateResolver();
+//        templateResolver.setSuffix(".html");
+//        templateResolver.setPrefix("templates/");
+//        templateResolver.setCacheable(false);
+//        templateResolver.setTemplateMode("HTML");
+//         
+//        TemplateEngine templateEngine = new TemplateEngine();
+//        templateEngine.setTemplateResolver(templateResolver);
+         
+        Context context = new Context();
+        context.setVariable("name", "Thomas");
+         
+        // Get the plain HTML with the resolved ${name} variable!
+//        String html = templateEngine.process("fubar", context);
+        String html = springTemplateEngine.process("fubar", context);
+        String xHtml = convertToXhtml(html);
+        logger.info(xHtml);
+        
         
         // TODO exception?
         try (OutputStream os = new FileOutputStream(pdfFile.getAbsolutePath())) {
             PdfRendererBuilder builder = new PdfRendererBuilder();
             builder.useFastMode();
-            builder.withUri(htmlFile.toURI().toString());
+//            builder.withUri(htmlFile.toURI().toString());
+            builder.withHtmlContent(xHtml, "");
             builder.toStream(os);
             builder.run();
             
@@ -116,6 +149,18 @@ public class MainController {
                     .contentType(MediaType.APPLICATION_PDF).body(new InputStreamResource(is));                
         }
     }
+    
+    private String convertToXhtml(String html) throws UnsupportedEncodingException {
+        Tidy tidy = new Tidy();
+        tidy.setInputEncoding(UTF_8);
+        tidy.setOutputEncoding(UTF_8);
+        tidy.setXHTML(true);
+        ByteArrayInputStream inputStream = new ByteArrayInputStream(html.getBytes(UTF_8));
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        tidy.parseDOM(inputStream, outputStream);
+        return outputStream.toString(UTF_8);
+    }
+
     
     @GetMapping("/model/{model}")
     public ResponseEntity<ModelMeta> model(@PathVariable String model) throws RepositoryAccessException, Ili2cException, IOException {
